@@ -1,0 +1,42 @@
+- hosts: web2
+#---
+  gather_facts: false
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  remote_user: root
+  tasks:
+    - debug: 
+        msg: "{{ rhostname }} *******************************************************"
+
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if telegraf has created the folder and copy the new file
+      
+    - name: stop telegraf as a command
+      command: /etc/init.d/telegraf stop
+
+    #one more time to be sure
+    - name: stop telegraf at the shell
+      shell: '/etc/init.d/telegraf stop'
+ 
+    - name: 
+      service:
+        name: telegraf
+        #state: stopped
+        state: restarted
+        #state: started
+               
+        
+     #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if logagent has created the folder and copy the new file
+    - name: stop logagent as a command
+      command: service logagent stop
+      
+    - name: stop logagent at the shell
+      shell:  'service logagent restart'
+
+    - name: stop service logagent 
+      service:
+        name: logagent
+        #state: stopped
+        state: restarted
+        #state: started
+   
+      

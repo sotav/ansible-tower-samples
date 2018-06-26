@@ -1,0 +1,58 @@
+- hosts: web1
+#---
+  gather_facts: false
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  remote_user: root
+  tasks:
+    - debug: 
+        msg: "{{ rhostname }} *******************************************************"
+
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
+      
+    - name: stop memcache
+      command:  service memcached stop
+    #just kill it 
+    - name: stop memcached at the shell
+      shell: 'fuser -k 11222/tcp'
+
+    - name: 
+      service:
+        name: memcached
+        state: stopped
+               
+
+    #and restart 
+    - name: restart memcache at the shell
+      shell: 'service memcached restart' 
+      
+     #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    - name: stop apache2 as a command
+      command: service apache2 stop
+      
+    - name: stop apache2 at the shell
+      shell: 'fuser -k 80/tcp'
+
+    - name: stop service apache2
+      service:
+        name: apache2
+        state: stopped
+         
+     #and restart 
+    - name: restart apache at the shell
+      shell: 'service apache2 restart'           
+        
+        
+        
+        
+        
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      

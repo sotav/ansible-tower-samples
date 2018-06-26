@@ -1,0 +1,82 @@
+- hosts: web1
+#---
+  gather_facts: True
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  remote_user: root
+  tasks:
+    - name: test connection
+      ping:
+      remote_user: root
+      
+    - name: make sure apache is running
+      service:
+       name: apache2
+       state: started
+       
+    - debug: 
+        msg: "{{ rhostname }} *******************************************************"
+
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if telegraf has created the folder and copy the new file
+    - name: check if telegraf startup script exists .
+      stat:
+        path: /etc/init.d/telegraf
+      register: stele
+      
+    - debug:
+        msg: "Ok telegraf startup script exists"
+      when: stele.stat.exists 
+ 
+    - name: change the file telegraf start up to root user 
+      shell: 'sed -i -e "s/USER=telegraf/USER=root/g" /etc/init.d/telegraf'
+      when: stele.stat.exists 
+      
+    - name: restart telegraf with the new conf
+      command: /etc/init.d/telegraf restart
+      when: stele.stat.exists
+    #one more time to be sure
+    - name: restart telegraf with the new conf
+      shell: '/etc/init.d/telegraf restart'
+      when: stele.stat.exists 
+    #second time as a service    
+    - name: Restart service telegraf, in all cases with the new conf
+      service:
+        name: telegraf
+        state: restarted
+      when: stele.stat.exists            
+        
+     #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if logagent has created the folder and copy the new file
+    - name: check if logagent startup script exists .
+      stat:
+        path: /etc/init/logagent.conf
+      register: logag
+      
+    - debug:
+        msg: "Ok startup script exists"
+      when: logag.stat.exists 
+       
+    - name: restart logagent 
+      shell:  'service logagent restart'
+      when: logag.stat.exists
+
+    - name: Restart service telegraf, in all cases with the new conf
+      service:
+        name: logagent
+        state: restarted
+      when: logag.stat.exists              
+        
+        
+        
+        
+        
+        
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      

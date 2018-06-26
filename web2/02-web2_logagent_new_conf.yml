@@ -1,0 +1,57 @@
+- hosts: web2
+#---
+
+  tasks:
+      
+    ############################### LOG AGENT  FOR APACHE ###############################################
+    #curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    #sudo apt-get install -y nodejs
+    #sudo npm i -g @sematext/logagent
+    #logagent --help 
+    #sudo logagent-setup -u http://192.99.35.160:9200 -i http_log -g '/var/log/apache2/*.log'
+    
+    - name: check if logagent directory exists .
+      stat:
+        path: /etc/sematext
+      register: logagent
+      
+    - debug:
+        msg: "It is a directory and exists"
+      when: logagent.stat.exists and logagent.stat.isdir
+      
+      
+    #copy the content of logagent to make it local on each server
+    - copy:
+        src: /root/ansible/remote_configs/web1/sematext/logagent_global.conf
+        dest: /root/packages/confs/logagent_global.conf    
+        
+    - name: copy the file logagent_global.conf to logagent.conf
+      shell: 'cp -Rpf /root/packages/confs/logagent_global.conf /root/packages/confs/logagent.conf'  
+      
+    - name: copy the file logagent_global.conf to logagent.conf
+      shell: 'cp -Rpf /root/packages/confs/logagent.conf /etc/sematext/'    
+      #when: logagent.stat.exists and logagent.stat.isdir
+     
+    - name: Stop service logagent, in all cases
+      service:
+        name: logagent
+        #state: stopped
+        state: restarted
+        #state: started
+        
+        
+        
+        
+        
+        
+        
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      

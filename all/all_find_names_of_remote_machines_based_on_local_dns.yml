@@ -1,0 +1,10 @@
+- hosts: all
+  gather_facts: True
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  tasks:
+    - debug:
+        msg: "{{ rhostname }}"
+
+
+  

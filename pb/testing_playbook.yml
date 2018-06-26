@@ -1,0 +1,48 @@
+- hosts: WEB2
+  remote_user: root
+  tasks:
+    - name: test connection
+      ping: 192.99.35.160
+      #remote_user: root
+      
+  #tasks:
+  #  - name: make sure postfix is running
+  #    service:
+  #     name: postfix
+  #     state: started
+  tasks:
+    - name: make sure apache is running
+      service:
+       name: apache2
+       state: started
+       
+  tasks:
+    - name: update apt
+      command: apt-get update
+
+  #tasks:    
+  #  - name: download chronograf_1.5.0.0_amd64.deb
+  #    shell: "wget -O /root/chronograf_1.5.0.0_amd64.deb https://dl.influxdata.com/chronograf/releases/chronograf_1.5.0.0_amd64.deb"
+  #    #get_url:
+  #    #   url: https://dl.influxdata.com/chronograf/releases/chronograf_1.5.0.0_amd64.deb 
+  #    #   dest: /root/chronograf_1.5.0.0_amd64.deb
+  #    #   mode: 7777 
+  #       
+  #tasks:    
+  #  - name: download telegraf_1.6.3-1_amd64.deb
+  #    shell: "wget -O /root/telegraf_1.6.3-1_amd64.deb https://dl.influxdata.com/telegraf/releases/telegraf_1.6.3-1_amd64.deb"
+  #   
+  #       
+  #tasks:    
+  #  - name: download filebeat-6.2.4-amd64.deb
+  #    shell: "wget -O /root/filebeat-6.2.4-amd64.deb  https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.2.4-amd64.deb"
+  #           
+  #       
+  #tasks:    
+  #  - name: download elasticsearch-1.7.2.deb
+  #    shell: "wget -O /root/elasticsearch-1.7.2.deb  https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.2.deb"
+  # 
+  #     
+  #tasks:    
+  #  - name: download logstash-forwarder.crt
+  #    shell: "wget -O /etc/pki/tls/certs/logstash-forwarder.crt http://www.akronis.gr/logstash-forwarder.crt"      

@@ -1,0 +1,273 @@
+- hosts: mail1
+  gather_facts: True
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  remote_user: root
+  tasks:
+    - name: test connection
+      ping:
+      remote_user: root
+      
+    - name: make sure postfix is running
+      service:
+       name: postfix
+       state: started
+       
+    - debug: 
+        msg: "{{ rhostname }} *******************************************************"
+    #- name: update apt
+    #  command: apt-get update
+
+    ##################################################################################################################################################        
+    #- name: Delete the wrong files from the previous_task 0
+    #  shell: "rm -Rf /root/packages/*.*"
+      
+    #- name: Delete the wrong files from the previous_task1
+    #  file:
+    #    path: /root/elasticsearch-1.7.2.deb
+    #    state: absent
+    #    
+    #- name: Delete the wrong files from the previous_task2
+    #  file:
+    #    path: /root/telegraf_1.6.3-1_amd64.deb
+    #    state: absent           
+    #    
+    #- name: Delete the wrong files from the previous_task3
+    #  file:
+    #    path: /root/chronograf_1.5.0.0_amd64.deb
+    #    state: absent 
+    #    
+    #- name: Delete the wrong files from the previous_task4
+    #  file:
+    #    path: /root/filebeat.template.json
+    #    state: absent
+    ####################################################################################################################################################
+    #   
+    #- name: download chronograf_1.5.0.0_amd64.deb
+    #  shell: "wget -O /root/packages/chronograf_1.5.0.0_amd64.deb https://dl.influxdata.com/chronograf/releases/chronograf_1.5.0.0_amd64.deb"
+    #  #get_url:validate_certs=no
+    #  #   url: https://dl.influxdata.com/chronograf/releases/chronograf_1.5.0.0_amd64.deb 
+    #  #   dest: /root/chronograf_1.5.0.0_amd64.deb
+    #  #   mode: 7777 
+    ############################### INSTALL TELEGRAF IF NOT EXIST ###############################################  
+    - name: check if telegraf install file script exists .
+      stat:
+        path: /root/packages/telegraf_1.6.3-1_amd64.deb
+      register: ftele
+      
+    - debug:
+        msg: "Ok telegraf_1.6.3-1_amd64.deb exist"
+      when: ftele.stat.exists 
+      
+    - name: download telegraf_1.6.3-1_amd64.deb
+      shell: "wget -O /root/packages/telegraf_1.6.3-1_amd64.deb https://dl.influxdata.com/telegraf/releases/telegraf_1.6.3-1_amd64.deb"
+      when: not ftele.stat.exists 
+      
+
+    - name: check if telegraf directory exists .
+      stat:
+        path: /etc/telegraf/
+      register: itele
+      
+    - debug:
+        msg: "There is no such directory"
+      when: not itele.stat.exists
+      
+    #finaly install it if it is not installed 
+    - name: Install telegraf since it is not installed
+      shell: 'dpkg -i /root/packages/telegraf_1.6.3-1_amd64.deb'
+      when: not itele.stat.exists 
+      
+    ############################### LOG AGENT  FOR APACHE ###############################################
+    #curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    #sudo apt-get install -y nodejs
+    #sudo npm i -g @sematext/logagent
+    #logagent --help 
+    #sudo logagent-setup -u http://192.99.35.160:9200 -i http_log -g '/var/log/apache2/*.log'
+    #
+    #- name: check if logagent directory exists .
+    #  stat:
+    #    path: /etc/sematext
+    #  register: logagent
+    #  
+    #- debug:
+    #    msg: "It is a directory and exists"
+    #  when: logagent.stat.exists and logagent.stat.isdir
+    #  
+    # #finaly install it if it is not installed  
+    #- name: install logagent if directory does not  exist
+    #  shell: 'curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -'
+    #  when: not logagent.stat.exists
+    #
+    #- name: install logagent if directory does not  exist
+    #  shell: 'sudo apt-get install -y nodejs'
+    #  when: not logagent.stat.exists      
+    # 
+    #- name: install logagent if directory does not  exist
+    #  shell: 'sudo npm i -g @sematext/logagent'
+    #  when: not logagent.stat.exists
+    # 
+    #- name: install logagent if directory does not  exist
+    #  shell: 'logagent --help'
+    #  when: logagent.stat.exists#
+    #
+    #- name: install logagent if directory does not  exist
+    #  shell: 'sudo logagent-setup -u http://192.99.35.160:9200 -i http_log -g "/var/log/apache2/*.log"'
+    #  when: logagent.stat.exists
+
+
+
+      
+    #copy the content of logagent to make it local on each server
+    #- copy:
+    #    src: /root/ansible/remote_configs/web1/sematext/logagent_global.conf
+    #    dest: /root/packages/confs/logagent_global.conf        
+
+    #- name: copy the file logagent_global.conf to logagent.conf
+    #  shell: 'cp -Rpf /root/packages/confs/logagent_global.conf /root/packages/confs/logagent.conf'    
+    #  when: logagent.stat.exists and logagent.stat.isdir
+    
+
+      
+    #- name: download elasticsearch-1.7.2.deb
+    #  shell: "wget -O /root/packages/elasticsearch-1.7.2.deb  https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.2.deb"
+      
+
+      
+    #####################################################################################################################################################
+    - name: get local name 
+      shell: "hostname > /root/packages/confs/name.txt"
+    - name: get local hw info 
+      shell: "sudo lshw > /root/packages/confs/hw.txt"
+    - name: get local disk info 
+      shell: "sudo lsblk -a > /root/packages/confs/lsblk.txt"     
+    - name: get external ip
+      shell: "curl -s http://ipecho.net/plain > /root/packages/confs/ip.txt"
+      
+      
+      
+    ################################################ FILEBEAT FOR MAIL ##################################################  
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ download if not exists 
+    - name: check if filebeat install file  exists .
+      stat:
+        path: /root/packages/filebeat-6.2.4-amd64.deb
+      register: fb_inst_file.stat.exists
+      
+      
+    #- name: download filebeat-6.2.4-amd64.deb
+    #  shell: "wget -O /root/packages/filebeat-6.2.4-amd64.deb  https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.2.4-amd64.deb"   
+    #  when: not fb_inst_file.stat.exists
+      
+          
+    #- name: check if filebeat install file  exists.
+    #  stat:
+    #    path: /root/packages/filebeat-6.2.4-amd64.deb
+    #  register: fb_inst_file.stat.exists
+      
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if is installed  - if not install it 
+    - name: Check if filebeat is installed
+      command: dpkg-query -l filebeat
+      register: deb_check
+
+    #- name: install filebeat
+    #  command: dpkg -i /root/packages/filebeat-6.2.4-amd64.deb
+      #when: deb_check.stdout.find('no packages found') != -1
+      
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ changing the content of filebeat to make it local on each server
+    - copy:
+        src: /root/ansible/remote_configs/mail1/filebeat/filebeat_global.yml
+        dest: /root/packages/confs/filebeat_global.yml
+        
+    - name: change the file filebeat_global.yml to filebeat_lc.yml
+      shell: 'curl -s http://ipecho.net/plain > my_c_ip.txt; my=`cat my_c_ip.txt`; mh={{ rhostname }}; sed -e "s/srv_ip:/srv_ip: "\"$my"\"/g" -e "s/srv_name:/srv_name: "\"$mh"\"/g" -e "s/\sip:/ ip: "\"$my"\"/g" /root/packages/confs/filebeat_global.yml > /root/packages/confs/filebeat_lc.yml && echo $my && echo $mh'
+      #curl -s http://ipecho.net/plain > my_c_ip.txt; my=`cat my_c_ip.txt`; mh=$(hostname); sed -e 's/srv_ip:/srv_ip: '$my'/g' -e 's/srv_name:/srv_name: '$mh'/g' -e 's/\sip:/ ip: '$my'/g' /root/ansible/remote_configs/web1/filebeat/filebeat_global.yml > /root/ansible/remote_configs/web1/filebeat/filebeat_lc.yml && echo $my && echo $mh
+     
+    - name: copy the file filebeat_lc.yml to filebeat.yml
+      shell: 'cp -Rpf /root/packages/confs/filebeat_lc.yml /root/packages/confs/filebeat.yml'               
+
+    - name: download logstash-forwarder.crt
+      shell: "wget -O /etc/pki/tls/certs/logstash-forwarder.crt http://www.akronis.gr/logstash-forwarder.crt"
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if filebeat has created the folder and copy the new file
+    - name: check if filebeat directory exists .
+      stat:
+        path: /etc/filebeat/
+      register: fele
+      
+    - debug:
+        msg: "It is a directory"
+      when: fele.stat.exists and fele.stat.isdir
+      
+    - name: copy the filebeat conf
+      shell: 'cp -Rpf /root/packages/confs/filebeat.yml /etc/filebeat/filebeat.yml'
+      when: fele.stat.exists and fele.stat.isdir      
+
+      
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  changing the content of telegraf to make it local on each server
+    - copy:
+        src: /root/ansible/remote_configs/mail1/telegraf/telegraf_global.conf
+        dest: /root/packages/confs/telegraf_global.conf
+        
+    - name: change the file telegraf_global.conf to telegraf_lc.conf
+      shell: 'curl -s http://ipecho.net/plain > my_c_ip.txt; my=`cat my_c_ip.txt`; mh={{ rhostname }}; mlh=$hostname sed -e "s/dc = "\""\"/dc = "\"$my"\"/g" -e "s/srv = "\""\"/srv = "\"$mh"\"/g" -e "s/hostname = "\""\"/hostname = "\"$mh"\"/g" /root/packages/confs/telegraf_global.conf > /root/packages/confs/telegraf_lc.conf && echo $my && echo $mh'
+      # curl -s http://ipecho.net/plain > my_c_ip.txt; my=`cat my_c_ip.txt`; mh=$(hostname); sed -e 's/dc = ""/dc = '"'$mh'"'/g' -e 's/srv = ""/srv = "'"$my"'"/g' /root/ansible/remote_configs/web1/telegraf/telegraf_global.conf > /root/ansible/remote_configs/web1/telegraf/telegraf_lc.conf && echo $my && echo $mh        
+        
+    - name: copy the file telegraf_lc.conf to telegraf.conf
+      shell: 'cp -Rpf /root/packages/confs/telegraf_lc.conf /root/packages/confs/telegraf.conf'
+      #getent hosts 192.99.0.219 | tail -n 1 | sed -e "s/^.* //;s/[[:punct:]]*$//"      
+        
+ 
+
+
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if telegraf has created the folder and copy the new file
+    - name: check if telegraf directory exists .
+      stat:
+        path: /etc/telegraf/
+      register: tele
+      
+    - debug:
+        msg: "It is a directory"
+      when: tele.stat.exists and tele.stat.isdir
+      
+    - name: copy the telegraf conf
+      shell: 'cp -Rpf /root/packages/confs/telegraf.conf /etc/telegraf/telegraf.conf'
+      when: tele.stat.exists and tele.stat.isdir      
+      
+      
+     #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if telegraf startup script exist
+    - name: check if telegraf startup script exists .
+      stat:
+        path: /etc/init.d/telegraf
+      register: stele
+      
+    - debug:
+        msg: "Ok startup script exists"
+      when: stele.stat.exists 
+ 
+    - name: change the file telegraf start up to root user 
+      shell: 'sed -i -e "s/USER=telegraf/USER=root/g" /etc/init.d/telegraf'
+      when: stele.stat.exists 
+      
+    - name: restart telegraf with the new conf
+      command: /etc/init.d/telegraf restart
+      when: stele.stat.exists
+       
+        
+      
+
+        
+        
+        
+        
+        
+        
+        
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      

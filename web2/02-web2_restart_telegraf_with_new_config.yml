@@ -1,0 +1,17 @@
+- hosts: web2
+#---
+  gather_facts: False
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  remote_user: root
+  tasks:
+
+      
+    - name: stop
+      shell: 'sudo /etc/init.d/telegraf stop'
+        
+    - name: start
+      shell: 'sudo /etc/init.d/telegraf start'
+      
+    - name: restart telegraf with the new conf
+      command: sudo /etc/init.d/telegraf restart

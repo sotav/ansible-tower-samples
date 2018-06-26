@@ -1,0 +1,40 @@
+- hosts: WEB2
+#---
+  gather_facts: true
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  remote_user: root
+  tasks:
+    - debug: 
+        msg: "{{ rhostname }} *******************************************************"
+
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ restart telegraf
+      
+    #- name: stop telegraf as a command
+    #  command: /etc/init.d/telegraf stop
+
+    #one more time to be sure
+    - name: stop telegraf at the shell
+      shell: '/etc/init.d/telegraf stop'
+ 
+    - name: 
+      service:
+        name: telegraf
+        #state: stopped
+        state: restarted
+        #state: started
+               
+        
+     #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ restart logagent
+    #- name: stop logagent as a command
+    #  command: service logagent stop
+      
+    #- name: stop logagent at the shell
+    #  shell:  'service logagent restart'
+
+    - name: stop service logagent 
+      service:
+        name: logagent
+        #state: stopped
+        state: restarted
+        #state: started

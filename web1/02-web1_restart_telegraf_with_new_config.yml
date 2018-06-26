@@ -1,0 +1,82 @@
+- hosts: web1
+#---
+  gather_facts: True
+  remote_user: root
+
+
+  vars:
+    ansible_user: ubuntu
+    rhostname:  "{{ inventory_hostname }}"
+    ansible_user: ubuntu
+    become: True
+    become_user: root
+  tasks:
+  
+  
+    - copy:
+        src: /root/ansible/remote_configs/web1/telegraf/telegraf_global.conf
+        dest: /root/packages/confs/telegraf_global.conf
+        
+    - name: change the file telegraf_global.conf to telegraf_lc.conf
+      shell: 'curl -s http://ipecho.net/plain > my_c_ip.txt; my=`cat my_c_ip.txt`; mh={{ rhostname }}; mlh=$hostname sed -e "s/dc = "\""\"/dc = "\"$my"\"/g" -e "s/srv = "\""\"/srv = "\"$mh"\"/g" -e "s/hostname = "\""\"/hostname = "\"$mh"\"/g" /root/packages/confs/telegraf_global.conf > /root/packages/confs/telegraf_lc.conf && echo $my && echo $mh'
+      # curl -s http://ipecho.net/plain > my_c_ip.txt; my=`cat my_c_ip.txt`; mh=$(hostname); sed -e 's/dc = ""/dc = '"'$mh'"'/g' -e 's/srv = ""/srv = "'"$my"'"/g' /root/ansible/remote_configs/web1/telegraf/telegraf_global.conf > /root/ansible/remote_configs/web1/telegraf/telegraf_lc.conf && echo $my && echo $mh        
+        
+    - name: copy the file telegraf_lc.conf to telegraf.conf
+      shell: 'cp -Rpf /root/packages/confs/telegraf_lc.conf /root/packages/confs/telegraf.conf'
+      #getent hosts 192.99.0.219 | tail -n 1 | sed -e "s/^.* //;s/[[:punct:]]*$//"      
+        
+ 
+
+
+    #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if telegraf has created the folder and copy the new file
+    - name: check if telegraf directory exists .
+      stat:
+        path: /etc/telegraf/
+      register: tele
+      
+    - debug:
+        msg: "It is a directory"
+      when: tele.stat.exists and tele.stat.isdir
+      
+    - name: copy the telegraf conf
+      shell: 'cp -Rpf /root/packages/confs/telegraf.conf /etc/telegraf/telegraf.conf'
+      when: tele.stat.exists and tele.stat.isdir      
+      
+      
+     #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ check if telegraf startup script exist
+    - name: check if telegraf startup script exists .
+      stat:
+        path: /etc/init.d/telegraf
+      register: stele
+      
+    - debug:
+        msg: "Ok startup script exists"
+      when: stele.stat.exists 
+ 
+    - name: change the file telegraf start up to root user 
+      shell: 'sed -i -e "s/USER=telegraf/USER=root/g" /etc/init.d/telegraf'
+      when: stele.stat.exists 
+      
+    - name: restart telegraf with the new conf
+      command: /etc/init.d/telegraf restart
+      #when: stele.stat.exists
+       
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      

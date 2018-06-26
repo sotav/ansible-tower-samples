@@ -1,0 +1,35 @@
+- hosts: web2
+#---
+  gather_facts: True
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  remote_user: root
+  tasks:
+
+    - name: change the ufw
+      shell: 'sudo ufw allow from 192.99.35.160'
+
+    - name: update apt
+      #become: true
+      apt:
+       #upgrade: yes
+       update_cache: yes
+       #cache_valid_time: 86400 #One day    
+         
+    - name: install munin
+      apt:
+       name: munin-node
+       state: present
+      
+      
+    - copy:
+        src: /root/ansible/remote_configs/mail1/munin/munin-node.conf
+        dest: /root/packages/confs/munin-node.conf
+        
+    - name: copy the file munin-node.conf to munin/ munin-node.conf
+      shell: 'cp -R /root/packages/confs/munin-node.conf /etc/munin/munin-node.conf' 
+      
+      
+      
+    - name: restart munin
+      shell: '/etc/init.d/munin-node restart'

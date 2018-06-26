@@ -1,0 +1,21 @@
+- hosts: all
+  gather_facts: True
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  tasks:
+  - debug:
+      msg: "{{ rhostname }} *******************************************************"
+  
+  - name: Remove scalyr agent package
+    apt: 
+     name=scalyr-agent-2 
+     state=absent
+  
+  - name: Remove scalyr repo package
+    apt: 
+     name=scalyr-repo 
+     state=absent
+     
+  - name: "apt-get update" 
+    apt:
+      update_cache: yes

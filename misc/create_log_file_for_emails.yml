@@ -1,0 +1,14 @@
+- hosts: mail1
+  gather_facts: True
+  vars:
+    rhostname:  "{{ inventory_hostname }}"
+  remote_user: root
+  tasks:
+  - debug:
+      msg: "{{ rhostname }} *******************************************************"
+  
+  - name: create /var/log/email_send.log directory
+    shell: "touch  /var/log/email_send.log"
+     
+  - name: create /var/log/email_send.log directory
+    shell: "chmod -R 7777 /var/log/email_send.log"
